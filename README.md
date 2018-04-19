@@ -1,2 +1,2 @@
-# dante
-Docker image for Dante
+# dante-docker
+Docker image for Dante socks server

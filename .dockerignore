@@ -1,0 +1,5 @@
+.git
+tmp
+docker-compose.yml
+**/.DS_Store
+**/*.swp

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+
+USERNAME=${1}
+PASSWORD=${2}
+
+if [ "$USERNAME" == "" ]; then
+   echo "Usage:"
+   echo "$0 USER [PASSWORD]"
+   exit 1
+fi
+
+source /etc/profile.d/dante
+
+if [ "${PASSWORD}" == "" ]; then
+   PASSWORD="$(apg -M NCL -m 16 -x 16 -n 1)"
+fi
+
+PASSWORD_HASH="$(mkpasswd "$PASSWORD")"
+
+if grep -q "^${USERNAME}:" /etc/dante/dante.passwd ; then
+   sed -i "s:^${USERNAME}\:.*:${USERNAME}\:${PASSWORD_HASH}:" /etc/dante/dante.passwd
+else
+   echo "${USERNAME}:${PASSWORD_HASH}" >> /etc/dante/dante.passwd
+fi
+
+echo "tg://socks?&user=${USERNAME}&pass=${PASSWORD}&port=${DANTE_PORT}&server=${DANTE_ADDR}"

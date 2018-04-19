@@ -1,0 +1,5 @@
+#!/bin/sh
+
+USERNAME=${1}
+
+sed -i "/^$USERNAME:/d" "/etc/dante/dante.passwd"

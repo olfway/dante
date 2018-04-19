@@ -1,0 +1,47 @@
+#logging
+debug: 0
+logoutput: stderr
+
+#server address specification
+internal: 0.0.0.0 port = 1080
+external: eth0
+
+#server identities
+user.privileged: root
+user.notprivileged: nobody
+
+#authentication methods
+clientmethod: none
+socksmethod: pam.username
+
+# allow any client connection
+client pass {
+    from: 0.0.0.0/0 port 1-65535 to: 0.0.0.0/0
+    log: connect disconnect error
+}
+
+# deny binding
+socks block {
+    from: 0.0.0.0/0 to: 0.0.0.0/0
+    command: bind
+    log: error
+}
+
+# deny proxied to lo
+socks block {
+    from: 0.0.0.0/0 to: 127.0.0.0/8
+    log: error
+}
+
+# deny proxied to 172.16/12
+socks block {
+    from: 0.0.0.0/0 to: 172.16.0.0/12
+    log: error
+}
+
+# allow the rest
+socks pass {
+    from: 0.0.0.0/0 to: 0.0.0.0/0
+    log: connect disconnect error
+    socksmethod: pam.username
+}

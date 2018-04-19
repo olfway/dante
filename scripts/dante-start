@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+
+env | grep DANTE | sort > /etc/profile.d/dante || true
+
+if [ ! -f "/etc/dante/dante.conf.tmpl" ]; then
+   cp "/usr/share/dante/dante.conf.tmpl" "/etc/dante/dante.conf.tmpl"
+fi
+
+if [ ! -f "/etc/dante/dante.conf" ]; then
+   cp "/etc/dante/dante.conf.tmpl" "/etc/dante/dante.conf"
+fi
+
+if [ ! -f "/etc/dante/dante.passwd" ]; then
+   touch "/etc/dante/dante.passwd"
+fi
+
+if [ "${DANTE_INTERFACE}" == "" ]; then
+   DANTE_INTERFACE=`ip  r | grep '^default' | grep -o 'dev[ ]*[^ ]*' | grep -o '[^ ]*$' || echo ""`
+fi
+
+if [ "${DANTE_INTERFACE}" != "" ]; then
+   sed -i 's/external\:.*$/external: '"${DANTE_INTERFACE}"'/' "/etc/dante/dante.conf"
+fi
+
+if [ "${DANTE_PORT}" != "" ]; then
+   # internal: 0.0.0.0 port = 1080
+   sed -i 's/\(internal\:.*port[ ]*=[ ]*\)[^ ]*\(.*\)$/\1'"${DANTE_PORT}"'\2/' "/etc/dante/dante.conf"
+fi
+
+if [ "${DANTE_USER}" != "" -a "${DANTE_PASSWORD}" != "" ]; then
+   /scripts/dante-users-add "${DANTE_USER}" "${DANTE_PASSWORD}"
+fi
+
+if [ "${DANTE_WORKERS}" == "" ]; then
+   DANTE_WORKERS="$(grep -c ^processor /proc/cpuinfo)"
+fi
+
+exec "/usr/sbin/sockd" "-f" "/etc/dante/dante.conf" "-N" "${DANTE_WORKERS}"

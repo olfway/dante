@@ -1,0 +1,21 @@
+version: '3.0'
+
+services:
+  dante:
+    image: olfway/dante
+    hostname: dante
+    container_name: dante
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DANTE_USER=${DANTE_USER:-dante}
+      - DANTE_PASSWORD=${DANTE_PASSWORD:-secret}
+      - DANTE_PORT=${DANTE_PORT:-1080}
+      - DANTE_ADDR=${DANTE_ADDR:-localhost}
+    volumes:
+      - ./etc:/etc/dante
+      - ./scripts:/scripts
+    ports:
+      - "${DANTE_PORT:-1080}:${DANTE_PORT:-1080}"
+    restart: unless-stopped
